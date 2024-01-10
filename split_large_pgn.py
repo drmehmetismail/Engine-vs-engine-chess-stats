@@ -2,39 +2,32 @@ def split_pgn_file(input_file_path, output_directory, max_file_size_mb):
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    max_file_size = max_file_size_mb * 1024 * 1024  # Convert MB to Bytes
+    max_file_size = max_file_size_mb * 1024 * 1024
     file_counter = 1
     buffer = b""
     encoding = detect_encoding(input_file_path)
 
-    with open(input_file_path, 'rb') as file:  # Open in binary mode
+    with open(input_file_path, 'rb') as file:
         while True:
-            chunk = file.read(1024 * 1024)  # Read 1MB chunk at a time
-            if not chunk and not buffer:  # End of file
-                break
-
+            chunk = file.read(1024 * 1024)
             buffer += chunk
 
-            if len(buffer) >= max_file_size:
+            while len(buffer) >= max_file_size:
                 split_index = find_last_complete_game(buffer)
 
                 if split_index != -1:
-                    # Write the complete games to a new file
                     with open(os.path.join(output_directory, f'games{file_counter}.pgn'), 'wb') as current_file:
                         current_file.write(buffer[:split_index + 1])
-                    buffer = buffer[split_index + 1:]
-                    # Remove leading whitespaces (including newline) from the new buffer
-                    buffer = buffer.lstrip(b' \t\r\n')
+                    buffer = buffer[split_index + 1:].lstrip(b' \t\r\n')
+                    file_counter += 1
                 else:
-                    # In case no complete game is found, increase buffer size
-                    continue
+                    break  # No valid split point found, wait for more data
 
-                file_counter += 1
-
-    # Write remaining buffer to file, if any
-    if buffer:
-        with open(os.path.join(output_directory, f'games{file_counter}.pgn'), 'wb') as current_file:
-            current_file.write(buffer)
+            if not chunk:  # End of file
+                if buffer:  # Write remaining buffer to a new file
+                    with open(os.path.join(output_directory, f'games{file_counter}.pgn'), 'wb') as current_file:
+                        current_file.write(buffer)
+                break
 
 if __name__ == "__main__":
     input_file_path = ''
