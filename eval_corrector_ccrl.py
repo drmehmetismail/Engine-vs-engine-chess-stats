@@ -18,8 +18,7 @@ def extract_eval_from_comment(comment):
             return None
     else:
         # If no eval is found, then it must be a book move, so return 0
-        return 0
-        #return None
+        return None
 
 def process_game(game):
     node = game
