@@ -20,8 +20,8 @@ def main():
     input_pgn_dir = pgn_output_dir
     # folder path for the output JSON file (from PGN files)
     json_output_dir = '/workspaces/Chess-Data-Processing/CCRL/Stats' 
-    # path for the input JSON file (from PGN files)
-    json_file_path = '/workspaces/Engine-vs-engine-chess-stats/PGNs/engine_aggregated_game_data.json'
+    # dir path for the input JSON files (from PGN files)
+    json_dir = json_output_dir
     # path for the output CSV file (from JSON file)
     csv_output_dir = '/workspaces/Engine-vs-engine-chess-stats/PGNs'
     # input CSV file path for calculating statistics
@@ -38,7 +38,7 @@ def main():
         ('eval_corrector_ccrl.py', [ccrl_input_dir, pgn_output_dir]), 
         #('pgn_engine_vs_engine_analyzer.py', [input_pgn_dir, json_output_dir]')
         #('pgn_evaluation_analyzer.py', [pgn_output_dir, json_output_dir]),
-        #('json_to_csv_converter.py', [json_file_path, csv_output_dir]),
+        #('json_to_csv_converter.py', [json_dir, csv_output_dir]),
         #('chess_stats_summarizer.py', [csv_file_path, stats_output_dir]),
         #('csv_to_player_stats.py', [csv_all_games_path, player_stats_output_dir])
     ]
