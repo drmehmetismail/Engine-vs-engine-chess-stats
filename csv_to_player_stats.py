@@ -1,10 +1,23 @@
 """This script analyzes chess game data, calculates various statistics (including sums, medians, and averages), 
 and generates a final DataFrame with player statistics, sorted by the average gi score in descending order.
-This is the full version of the above script."""
+This is the full version of the above script.
+"""
 import pandas as pd
-import sys
 import os
+import glob
 
+def combine_csv_files(input_dir, output_filename='combined.csv'):
+    csv_files = glob.glob(os.path.join(input_dir, '*.csv'))
+    combined_df = pd.DataFrame()
+
+    for file in csv_files:
+        df = pd.read_csv(file)
+        combined_df = pd.concat([combined_df, df], ignore_index=True)
+
+    output_path = os.path.join(input_dir, output_filename)
+    combined_df.to_csv(output_path, index=False)
+    print(f"Combined CSV created at {output_path}")
+    return output_path
 
 # Functions
 def read_csv(file_path):
@@ -131,8 +144,20 @@ def main(csv_all_games_path, player_stats_output_dir):
     # Sorting and Saving
     player_stats = player_stats.sort_values(by='avg_sgi', ascending=False)
     save_to_csv(player_stats, output_file_path)
+    print(f"Data saved to {output_file_path}")
 
 if __name__ == "__main__":
+    # If multiple CSVs: 
+    # input_dir = r"C:\Users\k1767099\_LichessDB\CCRL\test"
+    # csv_all_games_path = combine_csv_files(input_dir, output_filename='combined.csv')
+    # csv_all_games_path = r"C:\Users\k1767099\_LichessDB\CCRL\test\engine_aggregated_game_data.csv"
+    player_stats_output_dir = r"C:\Users\k1767099\_LichessDB\CCRL\test"
+    main(csv_all_games_path, player_stats_output_dir)
+
+if __name__ == "__main__":
+    # If multiple CSVs: 
+    # input_dir = ""
+    # csv_all_games_path = combine_csv_files(input_dir, output_filename='combined.csv')
     if len(sys.argv) < 3:
         print("Usage: python csv_to_player_stats.py <csv_all_games_path> <player_stats_output_dir>")
         sys.exit(1)
