@@ -11,6 +11,20 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 import os
+import glob
+
+def combine_csv_files(input_dir, output_filename='combined.csv'):
+    csv_files = glob.glob(os.path.join(input_dir, '*.csv'))
+    combined_df = pd.DataFrame()
+
+    for file in csv_files:
+        df = pd.read_csv(file)
+        combined_df = pd.concat([combined_df, df], ignore_index=True)
+
+    output_path = os.path.join(input_dir, output_filename)
+    combined_df.to_csv(output_path, index=False)
+    print(f"Combined CSV created at {output_path}")
+    return output_path
 
 def calculate_statistics(csv_input_file, output_directory):
     # Reading the CSV file
@@ -78,6 +92,9 @@ def main(input_csv_path, output_directory):
     calculate_statistics(input_csv_path, output_directory)
 
 if __name__ == "__main__":
+    # If multiple CSVs: 
+    # input_dir = r"C:\Users\k1767099\_LichessDB\CCRL\Stats"
+    # csv_all_games_path = combine_csv_files(input_dir, output_filename='combined.csv')
     if len(sys.argv) < 3:
         print("Usage: python chess_stats_summarizer.py <input_csv_path> <output_directory>")
         sys.exit(1)
