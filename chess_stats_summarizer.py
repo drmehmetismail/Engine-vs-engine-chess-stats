@@ -93,7 +93,7 @@ def main(input_csv_path, output_directory):
 
 if __name__ == "__main__":
     # If multiple CSVs: 
-    # input_dir = r"C:\Users\k1767099\_LichessDB\CCRL\Stats"
+    # input_dir = ""
     # csv_all_games_path = combine_csv_files(input_dir, output_filename='combined.csv')
     if len(sys.argv) < 3:
         print("Usage: python chess_stats_summarizer.py <input_csv_path> <output_directory>")
