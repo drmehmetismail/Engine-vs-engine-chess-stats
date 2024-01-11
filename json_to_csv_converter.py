@@ -10,46 +10,44 @@ from pandas import json_normalize
 import sys
 
 
-def main(json_file_path, csv_output_file):
+
+def process_single_json_file(json_file_path):
     data_list = []
+    with open(json_file_path, 'r') as f:
+        all_data = json.load(f)
+        if not all_data:
+            print(f"No data found in {json_file_path}")
+            return pd.DataFrame()
+        for key, data in all_data.items():
+            flattened_data = pd.json_normalize(data)
+            data_list.append(flattened_data)
+    return pd.concat(data_list, ignore_index=True)
 
-    try:
-        with open(json_file_path, 'r') as f:
-            all_data = json.load(f)
-            
-            if not all_data:  # Add a check for empty data
-                print(f"No data found in {json_file_path}")
-                return
-            # Iterate through each key in the JSON file
-            for key, data in all_data.items():
-                white_player = data.get('White', '')
-                black_player = data.get('Black', '')
+def process_json_files(json_dir_path, csv_output_dir):
+    all_files = glob.glob(os.path.join(json_dir_path, '**/*.json'), recursive=True)
+    aggregated_data = pd.DataFrame()
 
-                data['White'] = white_player
-                data['Black'] = black_player
+    for json_file in all_files:
+        try:
+            df = process_single_json_file(json_file)
+            aggregated_data = pd.concat([aggregated_data, df], ignore_index=True)
+        except Exception as e:
+            print(f'Error processing {json_file}: {e}')
 
-                flattened_data = json_normalize(data)
-                data_list.append(flattened_data)
-
-    except Exception as e:
-        print(f'Error processing {json_file_path}: {e}')
-
-    data_frame = pd.concat(data_list, ignore_index=True)
-
-    # Ensure the output directory exists
-    if not os.path.exists(csv_output_dir):
-        os.makedirs(csv_output_dir)
-
-    # Define the output CSV file path within the output directory
-    csv_output_file = os.path.join(csv_output_dir, 'engine_aggregated_game_data.csv')
-    data_frame.to_csv(csv_output_file, index=False)
-    print(f"Data saved to {csv_output_file}")
+    if not aggregated_data.empty:
+        csv_output_file = os.path.join(csv_output_dir, 'engine_aggregated_game_data.csv')
+        if not os.path.exists(csv_output_dir):
+            os.makedirs(csv_output_dir)
+        aggregated_data.to_csv(csv_output_file, index=False)
+        print(f"Data saved to {csv_output_file}")
+    else:
+        print("No data to save.")
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python json_to_csv_converter.py <json_file_path> <csv_output_dir>")
         sys.exit(1)
 
-    json_file_path = sys.argv[1]
+    json_dir = sys.argv[1]
     csv_output_dir = sys.argv[2]
-    main(json_file_path, csv_output_dir)
+    main(json_dir, csv_output_dir)
