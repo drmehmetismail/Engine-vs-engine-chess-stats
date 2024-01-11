@@ -1,6 +1,5 @@
 """This script analyzes chess game data, calculates various statistics (including sums, medians, and averages), 
 and generates a final DataFrame with player statistics, sorted by the average gi score in descending order.
-This is the full version of the above script.
 """
 import pandas as pd
 import os
