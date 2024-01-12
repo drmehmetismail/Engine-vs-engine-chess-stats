@@ -8,8 +8,13 @@ import os
 import pandas as pd
 from pandas import json_normalize
 import sys
+import time
 
-
+"""
+To merge all versions of the same engine
+def extract_first_word(full_name):
+    return full_name.split()[0] if full_name else ''
+"""
 
 def process_single_json_file(json_file_path):
     data_list = []
@@ -19,6 +24,13 @@ def process_single_json_file(json_file_path):
             print(f"No data found in {json_file_path}")
             return pd.DataFrame()
         for key, data in all_data.items():
+            """To merge all versions of the same engine, add:
+            white_player = data.get('White', '')
+            black_player = data.get('Black', '')
+
+            data['White'] = extract_first_word(white_player)
+            data['Black'] = extract_first_word(black_player)
+            """
             flattened_data = pd.json_normalize(data)
             data_list.append(flattened_data)
     return pd.concat(data_list, ignore_index=True)
