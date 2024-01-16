@@ -9,8 +9,9 @@ import chess.engine
 import json
 import os
 from chess.engine import Cp, Wdl
-import time
 import sys
+import time
+import chardet
 
 # Function to extract the evaluation from a node
 def extract_eval_from_node(node):
@@ -47,7 +48,7 @@ def calculate_acpl(pawns_list):
     black_acpl = sum(black_losses) / len(black_losses) if black_losses else 0
     return white_acpl, black_acpl
 
-def calculate_gi_by_result(white_gpl, black_gpl, game_result):
+def calculate_gi_by_result(white_gpl, black_gpl, game_result, postmove_exp_white, postmove_exp_black):
     # Calculate GI based on game result
     if game_result == '1/2-1/2':
         white_gi = 0.5 - white_gpl
@@ -106,7 +107,7 @@ def gi_and_gpl(pawns_list, game_result):
             black_gpl += exp_black_point_loss
             black_move_number += 1
     # Calculate GI based on game result
-    white_gi, black_gi = calculate_gi_by_result(white_gpl, black_gpl, game_result)
+    white_gi, black_gi = calculate_gi_by_result(white_gpl, black_gpl, game_result, postmove_exp_white, postmove_exp_black)
 
     return white_gi, black_gi, white_gpl, black_gpl, white_move_number, black_move_number-1
 
@@ -123,7 +124,7 @@ def calculate_expected_value(win_prob, draw_prob, loss_prob, turn):
 # This function calculates the GI and GPL for both players in an engine vs engine game using the evaluations of the other 
 # engine. A move's GPL is calculated as the difference between the expected value of the position before the move
 # and after the opponent's move (the own engine's evaluation is skipped). 
-def calculate_engine_vs_engine_GI(pawns_list,game_result):
+def calculate_engine_vs_engine_GI(pawns_list, game_result):
     # Initialize lists to store the skipped centipawn loss for White and Black
     white_scpl, black_scpl = [], []
     white_sgpl, black_sgpl = 0, 0
@@ -182,36 +183,35 @@ def calculate_engine_vs_engine_GI(pawns_list,game_result):
     #print("black_scpl: ", black_scpl)
 
     # Calculate GI based on game result
-    white_sgi, black_sgi = calculate_gi_by_result(white_sgpl, black_sgpl, game_result)
+    white_sgi, black_sgi = calculate_gi_by_result(white_sgpl, black_sgpl, game_result, postmove_exp_white, postmove_exp_black)
 
     # Return the average SCPL for both White and Black
     return white_stcpl, black_stcpl, white_sgi, black_sgi, white_sgpl, black_sgpl
 
-def write_json(data, file_path, file_counter):
-    new_file_path = file_path.replace('.json', f'{file_counter}.json')
-    with open(new_file_path, 'w') as outfile:
-        json.dump(data, outfile, indent=4)
+def detect_encoding(file_path):
+    with open(file_path, 'rb') as f:
+        raw_data = f.read(50000)  # Read first 50,000 bytes to guess encoding
+    return chardet.detect(raw_data)['encoding']
 
 def main(input_pgn_dir, output_json_dir):
     # Ensure the output directory exists
     if not os.path.exists(output_json_dir):
         os.makedirs(output_json_dir)
-    
-    base_output_json = os.path.join(output_json_dir, 'engine_aggregated_game_data.json')
+    # Define the output JSON file path
     aggregated_data = {}
     key_counter = 1
-    file_counter = 1
-    max_size = 50 * 1024 * 1024 # 50 MB in bytes
-    # Number of games to process before checking file size. Set batch_size = 2 * KB size or 1 game = 590 byte  
-    # so that it doesn't check before satisfying the constraint.
-    batch_size = 90000 
-    batch_counter = 0  # Counter for the current batch
-    
+    # walk through all pgn files in the dir
     for dirpath, dirnames, filenames in os.walk(input_pgn_dir):
         for filename in filenames:
             if filename.endswith('.pgn'):
+                aggregated_data = {}
                 pgn_file_path = os.path.join(dirpath, filename)
-                with open(pgn_file_path) as pgn:
+                print("pgn_file_path :", pgn_file_path)
+                json_file_name = filename.replace('.pgn', '.json')
+                output_json_path = os.path.join(output_json_dir, json_file_name)    
+                file_encoding = detect_encoding(pgn_file_path)
+                #print("file_encoding: ", file_encoding)
+                with open(pgn_file_path, encoding=file_encoding, errors='replace') as pgn:
                     while True:
                         game = chess.pgn.read_game(pgn)
                         if game is None:
@@ -252,7 +252,9 @@ def main(input_pgn_dir, output_json_dir):
 
                         # Calculate GI and GPL for both players
                         white_gi, black_gi, white_gpl, black_gpl, white_move_number, black_move_number = gi_and_gpl(pawns_list, game_result)
+
                         white_stcpl, black_stcpl, white_sgi, black_sgi, white_sgpl, black_sgpl = calculate_engine_vs_engine_GI(pawns_list, game_result)
+
                         key = key_counter
                         game_data = {
                             "white_sgi": round(white_sgi, 4), "black_sgi": round(black_sgi, 4),
@@ -266,21 +268,12 @@ def main(input_pgn_dir, output_json_dir):
                         }
                         aggregated_data[key] = game_data
                         key_counter += 1
-                        batch_counter += 1
-                        # Check size of aggregated_data after processing a batch of games
-                        if batch_counter >= batch_size:
-                            if json.dumps(aggregated_data).encode('utf-8').__sizeof__() >= max_size:
-                                write_json(aggregated_data, base_output_json, file_counter)
-                                file_counter += 1
-                                print("file_counter: ", file_counter)
-                                aggregated_data = {}  # Reset data for next file
-                            batch_counter = 0  # Reset batch counter
-    if aggregated_data:
-        write_json(aggregated_data, base_output_json, file_counter)
-
-    print(f"Aggregated data saved to {base_output_json}")
-    print(f"#Games = {key_counter - 1}")
-
+                if aggregated_data:
+                    with open(output_json_path, 'w') as json_file:
+                        json.dump(aggregated_data, json_file, indent=4)
+                    #print(f"Aggregated data saved to {output_json_path}")
+    print(f"#Games = {key_counter}")
+    
 if __name__ == "__main__":
     start_time = time.time()
     if len(sys.argv) < 3:
