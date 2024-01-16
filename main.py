@@ -12,35 +12,31 @@ def run_script(script_path, args):
 
 def main():
     base_path = os.path.dirname(os.path.abspath(__file__))
-    # input directory for CCRL files (.pgn files)
-    ccrl_input_dir = 'C:\\Users\\admin_chess\\Downloads\\CCRL-4040-commented.[1743565].pgn'
+    # input directory for CCRL .pgn files, e.g., from https://computerchess.org.uk/ccrl/4040/games.html
+    ccrl_input_dir = ''
     # output directory for PGN files
-    pgn_output_dir = '/workspaces/Engine-vs-engine-chess-stats/Full'
+    pgn_output_dir = ''
     # input directory for PGN files
     input_pgn_dir = pgn_output_dir
     # folder path for the output JSON file (from PGN files)
-    json_output_dir = '/workspaces/Chess-Data-Processing/CCRL/Stats' 
+    json_output_dir = '' 
     # dir path for the input JSON files (from PGN files)
     json_dir = json_output_dir
     # path for the output CSV file (from JSON file)
-    csv_output_dir = '/workspaces/Engine-vs-engine-chess-stats/PGNs'
+    csv_output_dir = ''
     # input CSV file path for calculating statistics
-    csv_file_path = '/workspaces/Engine-vs-engine-chess-stats/PGNs/engine_aggregated_game_data.csv'
+    csv_all_games_path = ''
     # output directory for statistics
     stats_output_dir = csv_output_dir
-    # input CSV file for player statistics
-    csv_all_games_path = csv_file_path 
-    # output CSV file for player statistics
-    player_stats_output_dir = csv_output_dir
+
 
     # Define the paths and arguments for each script
     scripts = [
         ('eval_corrector_ccrl.py', [ccrl_input_dir, pgn_output_dir]), 
-        #('pgn_engine_vs_engine_analyzer.py', [input_pgn_dir, json_output_dir]')
-        #('pgn_evaluation_analyzer.py', [pgn_output_dir, json_output_dir]),
-        #('json_to_csv_converter.py', [json_dir, csv_output_dir]),
-        #('chess_stats_summarizer.py', [csv_file_path, stats_output_dir]),
-        #('csv_to_player_stats.py', [csv_all_games_path, player_stats_output_dir])
+        ('pgn_engine_vs_engine_analyzer.py', [input_pgn_dir, json_output_dir]')
+        ('json_to_csv_converter.py', [json_dir, csv_output_dir]),
+        ('chess_stats_summarizer.py', [csv_all_games_path, stats_output_dir]),
+        ('csv_to_player_stats.py', [csv_all_games_path, stats_output_dir])
     ]
 
     # Sequentially run the scripts with their full paths and arguments
