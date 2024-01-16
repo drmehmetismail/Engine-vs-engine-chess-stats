@@ -1,9 +1,11 @@
 """This script analyzes chess game data, calculates various statistics (including sums, medians, and averages), 
 and generates a final DataFrame with player statistics, sorted by the average gi score in descending order.
 """
+
 import pandas as pd
 import os
 import glob
+import sys
 
 def combine_csv_files(input_dir, output_filename='combined.csv'):
     csv_files = glob.glob(os.path.join(input_dir, '*.csv'))
@@ -69,6 +71,18 @@ def calculate_averages(player_stats):
     player_stats['avg_gi'] = player_stats['total_gi_sum'] / player_stats['total_game_count']
     player_stats['avg_gpl'] = player_stats['total_gpl_sum'] / player_stats['total_game_count']
     player_stats['avg_acpl'] = player_stats['total_acpl_sum'] / player_stats['total_game_count']
+
+    # Calculate color averages
+    player_stats['avg_white_sgi'] = player_stats['white_sgi_sum'] / player_stats['White_games']
+    player_stats['avg_black_sgi'] = player_stats['black_sgi_sum'] / player_stats['Black_games']
+    player_stats['avg_white_sgpl'] = player_stats['white_sgpl_sum'] / player_stats['White_games']
+    player_stats['avg_black_sgpl'] = player_stats['black_sgpl_sum'] / player_stats['Black_games']
+    
+    # Calculate normalized sGIs
+    player_stats['normalized_sgi'] = 142.33 + 27.90 * player_stats['avg_sgi']
+    player_stats['normalized_white_sgi'] = 142.33 + 27.90 * player_stats['avg_white_sgi']
+    player_stats['normalized_black_sgi'] = 142.33 + 27.90 * player_stats['avg_black_sgi']
+    
     return player_stats
 
 def save_to_csv(df, file_path):
@@ -128,30 +142,29 @@ def main(csv_all_games_path, player_stats_output_dir):
 
     # Calculating Averages
     player_stats = calculate_averages(player_stats)
+    
 
     # Reordering columns
-    columns_order = ['Player', 'avg_sgi', 'avg_sgpl', 'avg_stcpl', 'avg_gi', 'avg_gpl', 'avg_acpl', 'total_moves', 'total_game_count', 'sgi_median', 'sgi_var', 'sgi_std', 'sgpl_median', 'sgpl_var', 'sgpl_std', 'stcpl_median', 'stcpl_var', 'stcpl_std', 'gi_median', 'gi_var', 'gi_std', 'gpl_median', 'gpl_var', 'gpl_std', 'acpl_median', 'acpl_var', 'acpl_std']
+    columns_order = ['Player', 'avg_sgi', 'normalized_sgi', 'avg_sgpl', 'avg_stcpl', 'avg_white_sgi', 
+                     'normalized_white_sgi', 'avg_black_sgi', 'normalized_black_sgi', 
+                     'avg_white_sgpl', 'avg_black_sgpl', 'avg_gi', 'avg_gpl', 'avg_acpl', 'total_moves', 
+                     'total_game_count', 'sgi_median', 'sgi_var', 
+                     'sgi_std', 'sgpl_median', 'sgpl_var', 'sgpl_std', 'stcpl_median', 'stcpl_var', 
+                     'stcpl_std', 'gi_median', 'gi_var', 'gi_std', 'gpl_median', 'gpl_var', 'gpl_std',
+                     'acpl_median', 'acpl_var', 'acpl_std']
     player_stats = player_stats[columns_order]
-
+    
     # Ensure the output directory exists
     if not os.path.exists(player_stats_output_dir):
         os.makedirs(player_stats_output_dir)
 
     # Define the output CSV file path within the output directory
-    output_file_path = os.path.join(player_stats_output_dir, 'player_stats.csv')
+    output_file_path = os.path.join(player_stats_output_dir, 'player_stats_merged_engines.csv')
 
     # Sorting and Saving
     player_stats = player_stats.sort_values(by='avg_sgi', ascending=False)
     save_to_csv(player_stats, output_file_path)
     print(f"Data saved to {output_file_path}")
-
-if __name__ == "__main__":
-    # If multiple CSVs: 
-    # input_dir = r"C:\Users\k1767099\_LichessDB\CCRL\test"
-    # csv_all_games_path = combine_csv_files(input_dir, output_filename='combined.csv')
-    # csv_all_games_path = r"C:\Users\k1767099\_LichessDB\CCRL\test\engine_aggregated_game_data.csv"
-    player_stats_output_dir = r"C:\Users\k1767099\_LichessDB\CCRL\test"
-    main(csv_all_games_path, player_stats_output_dir)
 
 if __name__ == "__main__":
     # If multiple CSVs: 
