@@ -25,7 +25,9 @@ def main():
     # path for the output CSV file (from JSON file)
     csv_output_dir = ''
     # input CSV file path for calculating statistics
-    csv_all_games_path = ''
+    csv_all_games_path = '.../engine_aggregated_game_data.csv'
+    # input CSV file path for calculating merged statistics
+    csv_merged_file_path = '.../engine_aggregated_game_data_merged_engines.csv'
     # output directory for statistics
     stats_output_dir = csv_output_dir
 
@@ -33,10 +35,12 @@ def main():
     # Define the paths and arguments for each script
     scripts = [
         ('eval_corrector_ccrl.py', [ccrl_input_dir, pgn_output_dir]), 
-        ('pgn_engine_vs_engine_analyzer.py', [input_pgn_dir, json_output_dir]')
+        ('pgn_engine_vs_engine_eval_analyzer.py', [input_pgn_dir, json_output_dir]),
         ('json_to_csv_converter.py', [json_dir, csv_output_dir]),
+        ('json_to_csv_merge_versions.py', [json_dir, csv_output_dir]),
         ('chess_stats_summarizer.py', [csv_all_games_path, stats_output_dir]),
-        ('csv_to_player_stats.py', [csv_all_games_path, stats_output_dir])
+        #('csv_to_player_stats.py', [csv_all_games_path, stats_output_dir]),
+        ('csv_to_player_stats.py', [csv_merged_file_path, player_stats_output_dir])
     ]
 
     # Sequentially run the scripts with their full paths and arguments
