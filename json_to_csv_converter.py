@@ -8,13 +8,7 @@ import os
 import pandas as pd
 from pandas import json_normalize
 import sys
-import time
-
-"""
-To merge all versions of the same engine
-def extract_first_word(full_name):
-    return full_name.split()[0] if full_name else ''
-"""
+import glob
 
 def process_single_json_file(json_file_path):
     data_list = []
@@ -54,6 +48,9 @@ def process_json_files(json_dir_path, csv_output_dir):
         print(f"Data saved to {csv_output_file}")
     else:
         print("No data to save.")
+
+def main(json_dir, csv_output_dir):
+    process_json_files(json_dir, csv_output_dir)
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
