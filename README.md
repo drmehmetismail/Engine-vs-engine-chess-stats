@@ -22,6 +22,13 @@ Run the `main.py` script to process data through all stages:
 ## Reference
 For more information, see https://doi.org/10.48550/arXiv.2302.13937
 
+## Reference
+- For more information, see https://doi.org/10.48550/arXiv.2302.13937
+- For World Championship and super GM games, see https://github.com/drmehmetismail/Performance-Metrics
+- For Lichess games, see https://github.com/drmehmetismail/Chess-Data-Processing
+- For quick calculation of the GI score and GPL, see https://github.com/drmehmetismail/Game-Intelligence-and-Game-Point-Loss-for-Chess
+
+
 ## Citation
 Please cite the following paper if you find this helpful.
 ```
